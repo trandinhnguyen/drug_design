@@ -91,13 +91,15 @@ def A1R(data_dir="data/datasets", quality="high", th=[6.5]):
     using the built-in Papyrus wrapper.
 
     Params:
+        data_dir: data location
         quality: choose minimum quality from {"high", "medium", "low"}
+        th: threshold of classification task
     Returns:
         a `QSPRDataset` instance with the loaded data
     """
 
     acc_keys = ["P30542"]  # https://www.uniprot.org/uniprotkb/P30542/entry
-    dataset_name = "A1_LIGANDS"
+    dataset_name = "A1R_LIGANDS"
     papyrus_version = "05.6"  # Papyrus database version
 
     papyrus = Papyrus(data_dir=data_dir, stereo=False, version=papyrus_version)
