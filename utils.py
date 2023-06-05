@@ -112,5 +112,44 @@ def A1R(data_dir="data/datasets", quality="high", th=[6.5]):
     )
 
 
+def get_dataset(
+    dataset_name, acc_keys, data_dir="data/datasets", quality="high", th=[6.5]
+):
+    """
+    A classification dataset that contains activity data on the *acc_keys param loaded from the Papyrus database
+    using the built-in Papyrus wrapper.
+
+    Params:
+        dataset_name: dataset's name
+        data_dir: data location
+        quality: choose minimum quality from {"high", "medium", "low"}
+        th: threshold of classification task
+        *acc_keys: list of accession key
+    Returns:
+        a `QSPRDataset` instance with the loaded data
+    """
+    papyrus_version = "05.6"  # Papyrus database version
+
+    papyrus = Papyrus(data_dir=data_dir, stereo=False, version=papyrus_version)
+
+    dataset = papyrus.getData(acc_keys, quality, name=dataset_name, use_existing=True)
+
+    print(f"Number of samples loaded: {len(dataset.getDF())}")
+    return QSPRDataset.fromMolTable(
+        dataset, "pchembl_value_Median", task=ModelTasks.CLASSIFICATION, th=th
+    )
+
+
+def sort_by_prediction(file_name):
+    path = os.path.join("data", "result", file_name + ".csv")
+    new_path = os.path.join("data", "result", "sorted" + file_name + ".csv")
+
+    df = pd.read_csv(path)
+    df = df.sort_values(by=["Prediction"], ascending=False)
+    df.to_csv(new_path)
+    return df
+
+
 if __name__ == "__main__":
-    A1R()
+    # A1R()
+    get_dataset("AR_LIGANDS", ["P0DMS8", "P29274", "P29275", "P30542"])
