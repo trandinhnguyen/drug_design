@@ -142,7 +142,7 @@ def get_dataset(
 
 def sort_by_prediction(file_name):
     path = os.path.join("data", "result", file_name + ".csv")
-    new_path = os.path.join("data", "result", "sorted" + file_name + ".csv")
+    new_path = os.path.join("data", "result", "sorted_" + file_name + ".csv")
 
     df = pd.read_csv(path)
     df = df.sort_values(by=["Prediction"], ascending=False)
@@ -150,6 +150,56 @@ def sort_by_prediction(file_name):
     return df
 
 
+def merge_AR_papyrus_cortellis():
+    DATASETS_PATH = "data/datasets"
+
+    # read AR_LIGANDS of Papyrus dataset
+    df_papyrus = pd.read_csv(
+        f"{DATASETS_PATH}/AR_LIGANDS.tsv",
+        sep="\t",
+        header=0,
+        na_values=("NA", "nan", "NaN"),
+    )
+
+    # read AR ligands of cortellis dataset
+    df_cortellis = pd.read_csv(
+        f"{DATASETS_PATH}/cortellis_P30542_same.csv",
+        header=0,
+        na_values=("NA", "nan", "NaN"),
+    )
+
+    # remove compound whose target is not AR family from df_cortellis
+    idx = df_cortellis[
+        (df_cortellis["Target"] != "P0DMS8")
+        & (df_cortellis["Target"] != "P29274")
+        & (df_cortellis["Target"] != "P29275")
+        & (df_cortellis["Target"] != "P30542")
+    ].index
+    df_cortellis.drop(idx, inplace=True)
+
+    # keep SMILES and pchembl_value_Median columns
+    df_papyrus = pd.concat(
+        [df_papyrus["SMILES"], df_papyrus["pchembl_value_Median"]], axis=1
+    )
+    df_cortellis = pd.concat(
+        [df_cortellis["Drug"], df_cortellis["regression_label"]], axis=1
+    )
+    df_cortellis.rename(
+        columns={"regression_label": "pchembl_value_Median", "Drug": "SMILES"},
+        inplace=True,
+    )
+
+    # merge 2 datasets
+    df = pd.concat([df_papyrus, df_cortellis])
+
+    # remove duplicate rows
+    df.drop_duplicates(inplace=True)
+
+    # save merged dataset
+    df.to_csv(f"{DATASETS_PATH}/AR_papyrus_cortellis.csv")
+
+
 if __name__ == "__main__":
     # A1R()
-    get_dataset("AR_LIGANDS", ["P0DMS8", "P29274", "P29275", "P30542"])
+    # get_dataset("AR_LIGANDS", ["P0DMS8", "P29274", "P29275", "P30542"])
+    merge_AR_papyrus_cortellis()
