@@ -2,7 +2,7 @@ examples/
 test.py
 play_ground.*
 
-data/
+# data/
 # !data/datasets
 data/datasets/papyrus/
 data/datasets/qsar/
